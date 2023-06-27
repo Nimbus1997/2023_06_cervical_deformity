@@ -1,4 +1,3 @@
-# wandb, nohup_out, checkpoints, results  폴더 필요
 data/*
 data_only_two/*
 result/*/*/*.pth
