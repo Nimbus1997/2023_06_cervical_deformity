@@ -1,0 +1,52 @@
+/opt/conda/envs/new_cv/lib/python3.11/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/opt/conda/envs/new_cv/lib/python3.11/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet50_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet50_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+total_params: 23516228
+0 498 250
+2.231036871791365 0.3132530120481928
+Best_val acc in fold 0 :  0.148  & epoch:  1
+Cancer 0.0
+HSIL 100.0
+LSIL 0.0
+normal 0.0
+Epoch [1/150]
+Train Loss: 2.2310 | Train Accuracy: 0.3133
+Val Loss: 165550629.7600 | Val Accuracy: 0.1480
+Traceback (most recent call last):
+  File "/root/jieunoh/cervical_deformity/code/resnet50.py", line 246, in <module>
+    save_accuracy_graph(train_acc_list, val_acc_list, class_acc_dict_val, fold, best_epoch)
+  File "/root/jieunoh/cervical_deformity/code/resnet50.py", line 61, in save_accuracy_graph
+    plt.plot(range(1, epochs+1), acc_list, label=f'Class {class_name} Accuracy', color=colorset[i], linewitdh=1)
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/pyplot.py", line 2812, in plot
+    return gca().plot(
+           ^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/axes/_axes.py", line 1688, in plot
+    lines = [*self._get_lines(*args, data=data, **kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 311, in __call__
+    yield from self._plot_args(
+               ^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 544, in _plot_args
+    return [l[0] for l in result]
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 544, in <listcomp>
+    return [l[0] for l in result]
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 537, in <genexpr>
+    result = (make_artist(x[:, j % ncx], y[:, j % ncy], kw,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/axes/_base.py", line 351, in _makeline
+    seg = mlines.Line2D(x, y, **kw)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/_api/deprecation.py", line 454, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/lines.py", line 393, in __init__
+    self._internal_update(kwargs)
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/artist.py", line 1223, in _internal_update
+    return self._update_props(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/conda/envs/new_cv/lib/python3.11/site-packages/matplotlib/artist.py", line 1197, in _update_props
+    raise AttributeError(
+AttributeError: Line2D.set() got an unexpected keyword argument 'linewitdh'
