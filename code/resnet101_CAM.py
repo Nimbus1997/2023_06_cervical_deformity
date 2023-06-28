@@ -15,7 +15,7 @@ import os
 from tqdm import tqdm
 
 # Load the pretrained ResNet-50 model
-model = models.resnet101(pretrained=True)
+model = models.resnet101(pretrained=False)
 model.fc = nn.Linear(2048, 4)
 
 # CHANGE -----------------------------------------------------------------

@@ -3,4 +3,5 @@ data_only_two/*
 result/*/*/*.pth
 result/*/*/*.jpg
 result/*/*/*.JPG
+result/*/*/confusion_matrices/*.png
 result/*/*/confusion_matrices/*

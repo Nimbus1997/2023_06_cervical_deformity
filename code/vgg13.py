@@ -2,6 +2,10 @@
 # edit 
 # 1) best epoch - save pth (2023.06.20)
 # 2) weighted loss - to overcome the biased data distribution (2023.06.20)
+# 
+# 실행방법
+# 1) change 내용 변경
+# 2) python 파일명.py
 
 import torch
 import torch.nn as nn

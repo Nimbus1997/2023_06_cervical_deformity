@@ -4,6 +4,7 @@
 # 2) weighted loss - to overcome the biased data distribution (2023.06.20)
 # 3) confusion matrix (2023.06.27)
 # 4) random seed 고정 (2023.06.27)
+# 5) loss plot color & line change (2023.06.28)
 # 
 # 실행방법
 # 1) change 내용 변경
@@ -32,7 +33,7 @@ import numpy as np
 # 데이터 폴더 경로 - Setting!!! =========================================
 data_dir = "/root/jieunoh/cervical_deformity/data"
 result_folder = "/root/jieunoh/cervical_deformity/result/resnet50"
-result_name = "resnet50_allclass_0627"
+result_name = "resnet50_allclass_0628"
 result_folder = os.path.join(result_folder,result_name)
 # # 하이퍼파라미터 설정
 num_epochs = 150
@@ -56,12 +57,11 @@ device = torch.device("cuda:%d"%(gpuid))
 def save_accuracy_graph(train_acc_list, val_acc_list,class_acc_dict, fold, best_epoch):
     colorset = ["lightcoral", "goldenrod", "yellowgreen", "cadetblue"] # cancer (연 빨강) - HSIL (연 노랑) - LSIL () - normal 순
     i =0
-    epochs = len(train_acc_list)
     plt.plot(train_acc_list, label='Train Accuracy', color="darkslateblue", linewidth =2) # linewidth default=1.5
     plt.plot(val_acc_list, label='Validation Accuracy', color="firebrick", linewidth =2)
     # Class-wise accuracy
     for class_name, acc_list in class_acc_dict.items():
-        plt.plot(range(1, epochs+1), acc_list, label=f'Class {class_name} Accuracy', color=colorset[i], linewidth=1)
+        plt.plot(acc_list, label=f'Class {class_name} Accuracy', color=colorset[i], linewidth=1)
         i+=1
     title = result_name+", best epoch = "+str(best_epoch)
     plt.title(title)
@@ -75,13 +75,13 @@ def save_accuracy_graph(train_acc_list, val_acc_list,class_acc_dict, fold, best_
 
 
 # confusion matrix 저장 및 반환하기 위한 함수 
-def confusion_matrix_save(labels_list, predicted_list, epoch, best):
+def confusion_matrix_save(labels_list, predicted_list, epoch, best, fold):
     # 이름 setting
-    title = "Confusion Matrix, epoch = " + str(epoch)
+    title = "Confusion Matrix, fold = %d, epoch = %d (now, best)"%(fold, epoch)
     if best:
-        cm_save_path =os.path.join(result_folder,"0_confusion_matrix_best.png")
+        cm_save_path =os.path.join(result_folder,"0_f%d_confusion_matrix_best.png"%fold)
     else:
-        cm_save_path =os.path.join(result_folder, "confusion_matrices", "confusion_matrix_%d.png"%(epoch))
+        cm_save_path =os.path.join(result_folder, "confusion_matrices", "f%d_confusion_matrix_%d.png"%(fold, epoch))
 
     
     confusion_mat = confusion_matrix(labels_list, predicted_list)
@@ -91,6 +91,7 @@ def confusion_matrix_save(labels_list, predicted_list, epoch, best):
     plt.figure(figsize=(8, 6))
     ax = sns.heatmap(confusion_mat, annot=True, fmt='d', cmap='Blues', cbar=True)
     # Set labels, title, and tick parameters
+    ax.xaxis.set_label_position('top')  # Move x-axis labels to the top
     ax.xaxis.tick_top()  # Move x-axis ticks to the top
     ax.set_xlabel('Predicted labels')
     ax.set_ylabel('True labels')
@@ -126,9 +127,9 @@ num_classes = len(dataset.classes)
 model = models.resnet50(pretrained = True)
 model.fc = nn.Linear(2048, num_classes)
 total_params = sum(p.numel() for p in model.parameters())
-print("total_params:", total_params)
+print(">>> Total_params: %d <<<"%total_params)
 
-
+# training & validation(for saving the best epoch) ----------------
 for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
     # for saving best model per fold
     val_accuracy_best = 0 # edit 1
@@ -144,7 +145,7 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
     val_acc_list = []
     class_acc_dict_val = {class_label: [] for class_label in class_labels}
 
-    print(fold, len(train_idx), len(val_idx))
+    print(">>> FOLD: %d, # of training data: %d, # of test data: %d <<<"%(fold, len(train_idx), len(val_idx)))
     train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx) # index 생성
     val_subsampler = torch.utils.data.SubsetRandomSampler(val_idx) # index 생성
     
@@ -179,7 +180,7 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
         train_loss = train_loss / len(train_idx)
         train_accuracy = train_correct / len(train_idx)
 
-        print(train_loss,train_accuracy)
+    
 
         # Validation
         model.eval()
@@ -214,7 +215,7 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
 
             # (edit 3) confusion matrix- save every 10 epoch ----
             if epoch%10 ==0:
-                confusion_matrix_save(labels_list, predicted_list, epoch, False)
+                confusion_matrix_save(labels_list, predicted_list, epoch, False, fold= fold)
                 
                     
             # best val acc -----
@@ -227,18 +228,14 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
                 torch.save(model.state_dict(), result_folder+f'/model_fold{fold}_best.pth') 
                 # 2) print "best"
                 best_epoch = epoch
-                print("Best_val acc in fold",str(fold), ": ", str(val_accuracy_best), " & epoch: ",str(best_epoch))
                 # 3) confusion matrix _ best version save
-                confusion_matrix_save(labels_list, predicted_list, epoch, True)
+                confusion_matrix_save(labels_list, predicted_list, epoch, True, fold = fold)
 
 
-            # 클래스별 정확도 출력
-            for i in range(num_classes):
-                class_acc = 100 * class_correct[i] / class_total[i]
-                print(class_labels[i], str(class_acc))
-                class_acc_dict_val[class_labels[i]].append(class_acc)
+            
 
     # 결과 출력
+        print()
         print(f"Epoch [{epoch}/{num_epochs}]")
         print(f"Train Loss: {train_loss:.4f} | Train Accuracy: {train_accuracy:.4f}")
         print(f"Val Loss: {val_loss:.4f} | Val Accuracy: {val_accuracy:.4f}")
@@ -248,5 +245,15 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
         train_acc_list.append(train_acc100)
         val_acc_list.append(val_acc100)
 
+        # 클래스별 정확도 출력
+        for i in range(num_classes):
+            class_acc = 100 * class_correct[i] / class_total[i]
+            print(class_labels[i], str(class_acc))
+            class_acc_dict_val[class_labels[i]].append(class_acc)
+        
         save_accuracy_graph(train_acc_list, val_acc_list, class_acc_dict_val, fold, best_epoch)
-        torch.save(model.state_dict(), result_folder+f'/model_fold{fold}.pth')
+        torch.save(model.state_dict(), result_folder+f'/model_fold{fold}_last.pth')
+
+
+# after training, CAM 뽑기 (whole validation)
+

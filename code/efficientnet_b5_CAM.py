@@ -44,7 +44,7 @@ class GradCAM:
         self.gradient = None
         # self.model.module.features[-1].register_forward_hook(self.save_feature_map)
         # self.model.module.features[-1].register_backward_hook(self.save_gradient)
-        self.model.features[-1].register_forward_hook(self.save_feature_map)
+        self.model.features[-1].register_forward_hook(self.save_feature_map) # (8) Conv2dNormActivation(
         self.model.features[-1].register_backward_hook(self.save_gradient)
 
     def save_feature_map(self, module, input, output):
