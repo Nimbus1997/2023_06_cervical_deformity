@@ -40,7 +40,7 @@ num_epochs = 150
 gpuid = 0
 resizee =512
 class_counts = [113, 119, 276, 240] # edit 2 class_labels 순서 ['Cancer', 'HSIL', 'LSIL', 'normal']
-seed = 42
+seed = 42 # edit 4
 # [END] 데이터 폴더 경로 - Setting!!! =========================================
 if not os.path.isdir(result_folder):
 	os.makedirs(result_folder)
@@ -52,7 +52,6 @@ device = torch.device("cuda:%d"%(gpuid))
 
 
 # def --------------------------------------------------------------------------
-
 # 학습 중 train accuracy와 validation accuracy를 그래프로 저장하기 위한 함수 
 def save_accuracy_graph(train_acc_list, val_acc_list,class_acc_dict, fold, best_epoch):
     colorset = ["lightcoral", "goldenrod", "yellowgreen", "cadetblue"] # cancer (연 빨강) - HSIL (연 노랑) - LSIL () - normal 순
@@ -208,8 +207,8 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
                     label = labels[i]
                     class_correct[label] += c[i].item()
                     class_total[label] += 1
-                predicted_list.extend(predicted.cpu().numpy())
-                labels_list.extend(labels.cpu().numpy())
+                predicted_list.extend(predicted.cpu().numpy()) # for confusion matrix (edit 3)
+                labels_list.extend(labels.cpu().numpy()) # for confusion matrix (edit 3)
             val_loss = val_loss / len(val_idx)
             val_accuracy = val_correct / len(val_idx)
 

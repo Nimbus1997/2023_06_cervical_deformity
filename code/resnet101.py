@@ -33,9 +33,9 @@ import numpy as np
 
 # 데이터 폴더 경로 - Setting!!! =========================================
 data_dir = "/root/jieunoh/cervical_deformity/data"
-result_folder = "/root/jieunoh/cervical_deformity/result/resnet101/"
+result_folder = "/root/jieunoh/cervical_deformity/result/resnet101"
 result_name = "resnet101_allclass_0628"
-result_folder = result_folder + result_name
+result_folder = os.path.join(result_folder,result_name)
 # # 하이퍼파라미터 설정
 num_epochs = 150
 gpuid = 0
