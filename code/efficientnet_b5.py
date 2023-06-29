@@ -212,12 +212,7 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
                 labels_list.extend(labels.cpu().numpy()) # for confusion matrix (edit 3)
             val_loss = val_loss / len(val_idx)
             val_accuracy = val_correct / len(val_idx)
-            if val_accuracy_best < val_accuracy:
-                val_accuracy_best = val_accuracy
-                torch.save(model.state_dict(), result_folder+f'/model_fold{fold}_best.pth')
-                best_epoch = epoch
-                print("best_fold",str(fold))
-
+            
             # (edit 3) confusion matrix- save every 10 epoch ----
             if epoch%10 ==0:
                 confusion_matrix_save(labels_list, predicted_list, epoch, False, fold= fold)
