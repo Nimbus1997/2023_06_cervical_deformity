@@ -104,7 +104,6 @@ def confusion_matrix_save(labels_list, predicted_list, epoch, best, fold):
 
 
 # code 시작 --------------------------------------------------------------------------
-
 # # 데이터 전처리
 pretransform = transforms.Compose([transforms.Resize((resizee,resizee)), transforms.ToTensor()])
 # 데이터셋 불러오기

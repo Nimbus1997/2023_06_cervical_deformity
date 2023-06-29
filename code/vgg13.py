@@ -7,8 +7,8 @@
 # 5) loss plot color & line change (2023.06.28)
 # 
 # 실행방법
-# 1) change 내용 변경
-# 2) python 파일명.py
+# 1) change 내용 변경 
+# 2) python 파일명.py (nohup python vgg13.py>../result/vgg13/vgg13_allclass_0628.txt&)
 
 import torch
 import torch.nn as nn
