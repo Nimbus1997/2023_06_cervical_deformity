@@ -25,13 +25,12 @@ import pdb
 from sklearn.metrics import confusion_matrix # edit 3
 import seaborn as sns # edit 3
 
-# Load the pretrained ResNet-101 model
-model = models.resnet101(weights=None) # old: pretrained=False
-model.fc = nn.Linear(2048, 4)
-
+# Load the pretrained vgg model
+model = models.vgg13_bn(weights=None)
+model.classifier[6] = nn.Linear(4096, 4)
 # CHANGE -----------------------------------------------------------------
 # image_path = '/root/jieunoh/cervical_deformity/data/Cancer/C_P0904_01_CS03_H_M_1_adenocarcinoma.jpg'
-root_dir = '/root/jieunoh/cervical_deformity/result/resnet101/resnet101_allclass_0628'
+root_dir = '/root/jieunoh/cervical_deformity/result/vgg13/vgg13_bn_allclass_0628'
 data_dir = "/root/jieunoh/cervical_deformity/data"
 device = torch.device("cuda:0")
 # class_list = ["Cancer", "normal"]
@@ -58,8 +57,8 @@ class GradCAM:
         self.model.eval()
         self.feature_map = None
         self.gradient = None
-        self.model._modules.get('layer4').register_forward_hook(self.save_feature_map)
-        self.model._modules.get('layer4').register_full_backward_hook(self.save_gradient)
+        self.model.features[-1].register_forward_hook(self.save_feature_map)
+        self.model.features[-1].register_full_backward_hook(self.save_gradient)
 
     def save_feature_map(self, module, input, output):
         self.feature_map = output
@@ -114,13 +113,14 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
         cam, predict_label = gradcam(images)
 
         heatmap = cv2.resize(cam, (images.shape[2], images.shape[3]))
+        # pdb.set_trace()
         heatmap = heatmap - np.min(heatmap)
-        heatmap = heatmap / np.max(heatmap)
+        heatmap = heatmap / (np.max(heatmap)+ 1e-8)
 
         # Convert the input image and heatmap to RGBA
         images = np.uint8(255 * images.cpu().squeeze().permute(1, 2, 0))
         heatmap = cv2.applyColorMap(np.uint8(255 * heatmap), cv2.COLORMAP_JET)
-        alpha = 0.2  # Adjust the transparency level as desired
+        alpha = 0.7  # Adjust the transparency level as desired
         heatmap = np.uint8(heatmap * alpha)
 
         # Overlay the heatmap on the input image
@@ -130,5 +130,6 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
         save_path = os.path.join(save_dir, class_list[labels],f'{i}_prediction_{class_list[predict_label]}_overlay.jpg')
         cv2.imwrite(save_path, overlaid_image)
     break
+
 
 

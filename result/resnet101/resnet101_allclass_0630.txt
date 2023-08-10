@@ -1,0 +1,23 @@
+/opt/conda/envs/new_cv/lib/python3.11/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/opt/conda/envs/new_cv/lib/python3.11/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=ResNet101_Weights.IMAGENET1K_V1`. You can also use `weights=ResNet101_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+>>> Total_params: 42508356 <<<
+>>> FOLD: 0, # of training data: 498, # of test data: 250 <<<
+2.0255515340820374 0.26104417670682734
+Epoch [1/150]
+Train Loss: 2.0256 | Train Accuracy: 0.2610
+Val Loss: 4282915102.7200 | Val Accuracy: 0.3000
+Val Loss: 4282915102.7200 | Val class avg Accuracy: 25.0000
+Cancer 0.0
+HSIL 0.0
+LSIL 0.0
+normal 100.0
+Traceback (most recent call last):
+  File "/root/jieunoh/cervical_deformity/code/resnet101.py", line 280, in <module>
+    save_accuracy_graph(train_acc_list, val_acc_list, class_acc_dict_val, val_class_avg_acc_list, fold, best_epoch) # edit 6
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/jieunoh/cervical_deformity/code/resnet101.py", line 70, in save_accuracy_graph
+    for class_name, acc_list in class_acc_dict.items():
+                                ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'items'

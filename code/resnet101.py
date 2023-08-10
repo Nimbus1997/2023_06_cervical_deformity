@@ -5,6 +5,7 @@
 # 3) confusion matrix (2023.06.28)
 # 4) random seed 고정 (2023.06.28)
 # 5) loss plot color & line change (2023.06.28)
+# 6) 
 # 
 # 실행방법
 # 1) change 내용 변경
@@ -34,7 +35,7 @@ import numpy as np
 # 데이터 폴더 경로 - Setting!!! =========================================
 data_dir = "/root/jieunoh/cervical_deformity/data"
 result_folder = "/root/jieunoh/cervical_deformity/result/resnet101"
-result_name = "resnet101_allclass_0628"
+result_name = "resnet101_allclass_0630"
 result_folder = os.path.join(result_folder,result_name)
 # # 하이퍼파라미터 설정
 num_epochs = 150
@@ -57,12 +58,14 @@ device = torch.device("cuda:%d"%(gpuid))
 # def --------------------------------------------------------------------------
 
 # 학습 중 train accuracy와 validation accuracy를 그래프로 저장하기 위한 함수
-def save_accuracy_graph(train_acc_list, val_acc_list,class_acc_dict, fold, best_epoch):
+def save_accuracy_graph(train_acc_list, val_acc_list,val_class_avg_acc_list, class_acc_dict, fold, best_epoch):
     colorset = ["lightcoral", "goldenrod", "yellowgreen", "cadetblue"] # cancer (연 빨강) - HSIL (연 노랑) - LSIL () - normal 순
     i =0
 
     plt.plot(train_acc_list, label='Train Accuracy', color="darkslateblue", linewidth =2) # linewidth default=1.5
     plt.plot(val_acc_list, label='Validation Accuracy', color="firebrick", linewidth =2)
+    plt.plot(val_acc_list, label='Validation Class avg Accuracy', color="darkorange", linewidth =2)
+    
     # Class-wise accuracy
     for class_name, acc_list in class_acc_dict.items():
         plt.plot(acc_list, label=f'Class {class_name} Accuracy', color=colorset[i], linewidth=1)
@@ -136,16 +139,20 @@ print(">>> Total_params: %d <<<"%total_params)
 for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
     # for saving best model 
     val_accuracy_best = 0 # edit 1
+    class_avg_best =0.0 # edit 6
     best_epoch = 0
-    # 모델 정의 및 pretrained 가중치 로드
-    model = models.resnet101(pretrained = True) 
-    model.fc = nn.Linear(2048, num_classes)  # 마지막 레이어를 num_classes에 맞게 수정
-    model = model.to(device)
 
     # 학습 중 train accuracy와 validation accuracy를 기록하기 위한 리스트
     train_acc_list = []
     val_acc_list = []
+    val_class_avg_acc_list =[] # edit 6
     class_acc_dict_val = {class_label: [] for class_label in class_labels}
+
+
+    # 모델 정의 및 pretrained 가중치 로드
+    model = models.resnet101(pretrained = True) 
+    model.fc = nn.Linear(2048, num_classes)  # 마지막 레이어를 num_classes에 맞게 수정
+    model = model.to(device)
 
     print(">>> FOLD: %d, # of training data: %d, # of test data: %d <<<"%(fold, len(train_idx), len(val_idx)))
     train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx) # index 생성
@@ -220,8 +227,27 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
             #   1) model parameter .pth save
             #   2) print "best"
             #   3) confusion matrix _ best version save
-            if val_accuracy_best < val_accuracy:
-                val_accuracy_best = val_accuracy
+            
+            
+            # 클래스별 정확도 출력 # edit 6
+            class_avg =0.0 
+            for i in range(num_classes):
+                class_acc = 100.0 * class_correct[i] / class_total[i]
+                class_acc_dict_val[class_labels[i]].append(class_acc)
+                class_avg +=class_acc 
+            class_avg = class_avg / num_classes
+
+            # if val_accuracy_best < val_accuracy:
+            #     val_accuracy_best = val_accuracy
+            #     # 1) model parameter .pth save
+            #     torch.save(model.state_dict(), result_folder+f'/model_fold{fold}_best.pth') 
+            #     # 2) print "best"
+            #     best_epoch = epoch
+            #     # 3) confusion matrix _ best version save
+            #     confusion_matrix_save(labels_list, predicted_list, epoch, True, fold = fold)
+
+            if class_avg_best < class_avg:
+                class_avg_best = class_avg
                 # 1) model parameter .pth save
                 torch.save(model.state_dict(), result_folder+f'/model_fold{fold}_best.pth') 
                 # 2) print "best"
@@ -235,17 +261,22 @@ for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset)):
         print(f"Epoch [{epoch}/{num_epochs}]")
         print(f"Train Loss: {train_loss:.4f} | Train Accuracy: {train_accuracy:.4f}")
         print(f"Val Loss: {val_loss:.4f} | Val Accuracy: {val_accuracy:.4f}")
+        print(f"Val Loss: {val_loss:.4f} | Val class avg Accuracy: {class_avg:.4f}")  # edit 6
+
 
         train_acc100 = 100.0 * train_accuracy
         val_acc100 = 100.0 * val_accuracy
+        class_avg100 = 100.0* class_avg # edit 6
         train_acc_list.append(train_acc100)
         val_acc_list.append(val_acc100)
+        val_class_avg_acc_list.append(class_avg100) # edit 6
+        
         # 클래스별 정확도 출력
         for i in range(num_classes):
             class_acc = 100 * class_correct[i] / class_total[i]
             print(class_labels[i], str(class_acc))
             class_acc_dict_val[class_labels[i]].append(class_acc)
 
-        save_accuracy_graph(train_acc_list, val_acc_list, class_acc_dict_val, fold, best_epoch)
+        save_accuracy_graph(train_acc_list, val_acc_list, class_acc_dict_val, val_class_avg_acc_list, fold, best_epoch) # edit 6
         torch.save(model.state_dict(), result_folder+f'/model_fold{fold}_last.pth')
 

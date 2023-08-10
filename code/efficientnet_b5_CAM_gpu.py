@@ -25,13 +25,13 @@ import pdb
 from sklearn.metrics import confusion_matrix # edit 3
 import seaborn as sns # edit 3
 
-# Load the pretrained ResNet-101 model
-model = models.resnet101(weights=None) # old: pretrained=False
-model.fc = nn.Linear(2048, 4)
+# Load the pretrained ResNet-50 model
+model = models.efficientnet_b5(weights=None)
+model.classifier[1] = nn.Linear(model.classifier[1].in_features, 4) 
 
 # CHANGE -----------------------------------------------------------------
 # image_path = '/root/jieunoh/cervical_deformity/data/Cancer/C_P0904_01_CS03_H_M_1_adenocarcinoma.jpg'
-root_dir = '/root/jieunoh/cervical_deformity/result/resnet101/resnet101_allclass_0628'
+root_dir = '/root/jieunoh/cervical_deformity/result/efficientnet_b5/efficientnet_b5_allclass_0629'
 data_dir = "/root/jieunoh/cervical_deformity/data"
 device = torch.device("cuda:0")
 # class_list = ["Cancer", "normal"]
@@ -58,18 +58,14 @@ class GradCAM:
         self.model.eval()
         self.feature_map = None
         self.gradient = None
-        self.model._modules.get('layer4').register_forward_hook(self.save_feature_map)
-        self.model._modules.get('layer4').register_full_backward_hook(self.save_gradient)
+        self.model.features[-1].register_forward_hook(self.save_feature_map)
+        self.model.features[-1].register_full_backward_hook(self.save_gradient)
 
     def save_feature_map(self, module, input, output):
         self.feature_map = output
 
     def save_gradient(self, module, grad_input, grad_output):
         self.gradient = grad_output[0]
-        # print(len(grad_output))
-        # print(grad_output[0].shape)
-
-
 
     def __call__(self, input_tensor):
         output = self.model(input_tensor)

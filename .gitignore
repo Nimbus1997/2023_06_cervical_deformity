@@ -5,3 +5,4 @@ result/*/*/*.jpg
 result/*/*/*.JPG
 result/*/*/confusion_matrices/*.png
 result/*/*/confusion_matrices/*
+result/*/*/CAM/*
